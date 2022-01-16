@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2019",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "./types",
+    "strict": true,
+    "lib": ["ESNext"],
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "moduleResolution": "Node",
+    "allowJs": true
+  },
+  "exclude": ["node_modules"],
+  "include": ["src/**/*.ts"]
+}
