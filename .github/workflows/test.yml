@@ -52,4 +52,4 @@ jobs:
         with:
           name: workspace-${{ github.run_id }}
       - run: tar -xpf workspace.tar
-      - run: npm run lint
+      - run: npm run lint:ci

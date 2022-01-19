@@ -13,7 +13,8 @@ const createCode = (
 ) => {
   const code = Object.create(null, {
     toString: {
-      value: () => format(codeString, options),
+      value: () =>
+        format(codeString.replace(/\s*[/]{2}[^\n]*\n/gm, "\n"), options),
       enumerable: false,
       configurable: false,
       writable: false,

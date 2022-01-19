@@ -23,9 +23,6 @@ const runBuild = async (
   ajvOptions: Options = {}
 ) => {
   const result = await esbuild.build({
-    /* 
-   
-     */
     target: "node16",
     bundle: true,
     plugins: [

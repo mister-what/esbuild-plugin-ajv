@@ -1,7 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AjvPlugin bundles built schemas 1`] = `
-// ajv-validator:/Users/napalm/projects/esbuild-plugin-ajv/src/__fixtures__/testSchema.json
 var testSchema_default = validate11;
 function validate11(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
   let vErrors = null;
@@ -188,8 +187,6 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
   validate11.errors = vErrors;
   return errors === 0;
 }
-
-// src/__fixtures__/test-entrypoint.js
 var validate = (value) => {
   if (!testSchema_default(value)) throw testSchema_default.errors;
   return value;
