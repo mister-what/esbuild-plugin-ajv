@@ -1,14 +1,21 @@
-import { toMatchInlineSnapshot } from "jest-snapshot";
+import { toMatchSnapshot } from "jest-snapshot";
+import { format, Options } from "prettier";
+import { complement as not } from "ramda";
 
 type CodeRef = { toString(): string };
 const codeRefs = new WeakSet<CodeRef>();
 const isCodeRef = (x: unknown): x is CodeRef =>
   x != null && typeof x === "object" && x.toString != null && codeRefs.has(x);
+const isString = (x: unknown): x is string =>
+  x != null && typeof x === "string";
 
-const createCode = (codeString: string) => {
+const createCode = (
+  codeString: string,
+  options: Options = { parser: "babel" }
+) => {
   const code = Object.create(null, {
     toString: {
-      value: () => codeString,
+      value: () => format(codeString, options),
       enumerable: false,
       configurable: false,
       writable: false,
@@ -26,18 +33,23 @@ expect.addSnapshotSerializer({
     return val.toString();
   },
 });
-
-expect.extend({
-  toMatchCode(received: string) {
-    return toMatchInlineSnapshot.call(this as any, createCode(received));
+const matchers: jest.ExpectExtendMap = {
+  toMatchCode(received: string, options?: Options, testName?: string) {
+    return toMatchSnapshot.call(
+      this as never,
+      createCode(received, options),
+      testName ?? ""
+    );
   },
-});
+};
+expect.extend(matchers);
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
-      toMatchCode(code?: string): R;
+      toMatchCode(options: Options, testName?: string): R;
+      toMatchCode(options?: Options): R;
     }
   }
 }

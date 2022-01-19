@@ -7,6 +7,7 @@
     "dist",
     "types"
   ],
+  "license": "MIT",
   "scripts": {
     "build:js": "node build.mjs",
     "build:dts:tsc": "tsc -p tsconfig.build.json",
