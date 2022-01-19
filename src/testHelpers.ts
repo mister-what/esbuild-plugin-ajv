@@ -1,13 +1,11 @@
 import { toMatchSnapshot } from "jest-snapshot";
-import { format, Options } from "prettier";
-import { complement as not } from "ramda";
+import type { Options } from "prettier";
+import { format } from "prettier";
 
 type CodeRef = { toString(): string };
 const codeRefs = new WeakSet<CodeRef>();
 const isCodeRef = (x: unknown): x is CodeRef =>
   x != null && typeof x === "object" && x.toString != null && codeRefs.has(x);
-const isString = (x: unknown): x is string =>
-  x != null && typeof x === "string";
 
 const createCode = (
   codeString: string,

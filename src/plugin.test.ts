@@ -1,9 +1,9 @@
 import path from "path";
 import { runInThisContext } from "vm";
 import * as esbuild from "esbuild";
-import { AjvPlugin, Options } from "./plugin";
-import { CodeKeywordDefinition } from "ajv";
 import getTransformKeywordDef from "ajv-keywords/dist/definitions/transform";
+import type { Options } from "./plugin";
+import { AjvPlugin } from "./plugin";
 
 const wrapInCjs = (source: string) =>
   [
