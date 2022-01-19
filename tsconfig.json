@@ -6,7 +6,6 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "declarationDir": "./types",
     "strict": true,
     "lib": ["ESNext"],
     "resolveJsonModule": true,
@@ -15,5 +14,14 @@
     "allowJs": true
   },
   "exclude": ["node_modules"],
-  "include": ["src/**/*.ts"]
+  "include": [
+    "*.cjs",
+    "*.js",
+    "*.mjs",
+    "*.ts",
+    "./src/**/*.ts",
+    "./src/*.cjs",
+    "./src/__fixtures__/*.js",
+    ".eslintrc.cjs"
+  ]
 }

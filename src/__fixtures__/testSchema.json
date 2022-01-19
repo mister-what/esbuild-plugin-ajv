@@ -12,6 +12,9 @@
       "items": {
         "type": "integer"
       }
+    },
+    "external": {
+      "$ref": "./externalSchema.json#/definitions/name"
     }
   },
   "required": ["foo", "baz"]

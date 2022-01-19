@@ -5,11 +5,11 @@ const run = async () =>
     bundle: true,
     format: "cjs",
     outdir: "./dist",
-    entryPoints: { index: "./src/index.ts" },
+    entryPoints: { index: "./src/index.cjs" },
     platform: "node",
-    mainFields: ['module', 'main'],
+    mainFields: ["module", "main"],
     target: ["node12"],
-    external: ["ajv", "ajv/dist/standalone", "prettier"],
+    external: ["ajv", "ajv/dist/standalone"],
   });
 
 run().catch((error) => {

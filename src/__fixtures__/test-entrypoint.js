@@ -1,8 +1,6 @@
-import validator from "ajv:./testSchema.json";
+import validator from "./testSchema.json?ajv";
 
-const checkValid = (value) => {
+export const validate = (value) => {
   if (!validator(value)) throw validator.errors;
   return value;
 };
-
-export default checkValid;

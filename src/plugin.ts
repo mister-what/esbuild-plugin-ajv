@@ -1,18 +1,20 @@
 import path from "path";
 import fs from "fs/promises";
+import { URL } from "url";
 import type { Plugin } from "esbuild";
-import type { CodeKeywordDefinition, Options as AjvOptions } from "ajv";
+import type {
+  CodeKeywordDefinition,
+  Options as AjvOptions,
+  AnySchemaObject,
+} from "ajv";
 import Ajv from "ajv";
 import standaloneCode from "ajv/dist/standalone";
-import { __, curryN, mergeDeepLeft } from "ramda";
-import { format } from "prettier";
+import { mergeDeepLeft } from "ramda";
 
 export interface Options {
   extraKeywords?: CodeKeywordDefinition[];
   ajvOptions?: AjvOptions;
 }
-
-const formatJs = curryN(2, format)(__, { parser: "babel" });
 
 export const AjvPlugin = ({
   extraKeywords = [],
@@ -26,21 +28,31 @@ export const AjvPlugin = ({
           code: {
             source: true,
             optimize: 1,
+            esm: true,
+            lines: true,
           },
+          loadSchema: async (uri: string) =>
+            JSON.parse(
+              await fs.readFile(
+                path.join(process.cwd(), new URL(uri).pathname),
+                "utf8"
+              )
+            ) as AnySchemaObject,
         },
         ajvOptions
       )
     );
+
     for (const keywordDef of extraKeywords) {
       ajv.addKeyword(keywordDef);
     }
 
     build.onResolve(
-      { filter: /^ajv:.+\.json$/i },
+      { filter: /\.json\?ajv$/i },
       async ({ path: rawPath, resolveDir }) => {
         return {
           path: (
-            await build.resolve(rawPath.replace(/^ajv:/i, ""), { resolveDir })
+            await build.resolve(rawPath.replace(/\?ajv$/i, ""), { resolveDir })
           ).path,
           namespace: "ajv-validator",
         };
@@ -49,9 +61,15 @@ export const AjvPlugin = ({
     build.onLoad(
       { namespace: "ajv-validator", filter: /.*/ },
       async ({ path: filePath }) => {
-        const schema = JSON.parse(await fs.readFile(filePath, "utf8"));
+        const schema = JSON.parse(
+          await fs.readFile(filePath, "utf8")
+        ) as AnySchemaObject;
+        schema.$id = `http://example.com/${path.relative(
+          process.cwd(),
+          filePath
+        )}`;
         return {
-          contents: formatJs(standaloneCode(ajv, ajv.compile(schema))),
+          contents: standaloneCode(ajv, await ajv.compileAsync(schema)),
           loader: "js" as const,
           resolveDir: path.dirname(filePath),
         };

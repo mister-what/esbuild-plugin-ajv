@@ -1,0 +1,6 @@
+dist
+types
+node_modules
+coverage
+jest.config.ts
+src/__fixtures__

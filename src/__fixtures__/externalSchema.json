@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "definitions": {
+    "name": {
+      "type": "string"
+    }
+  }
+}
