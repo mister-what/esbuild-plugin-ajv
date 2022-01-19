@@ -22,10 +22,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
       - run: npm ci
+      - name: Tar files
+        run: tar -cvf workspace.tar ${{ github.workspace }}
       - uses: actions/upload-artifact@v2
         with:
           name: workspace-${{ github.run_id }}
-          path: ${{ github.workspace }}
+          path: workspace.tar
           retention-days: 1
   test:
     needs: setup
@@ -37,6 +39,8 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: workspace-${{ github.run_id }}
+          path: ${{ github.workspace }}/workspace.tar
+      - run: tar -xpf workspace.tar
       - run: npm test -- --ci
   lint:
     needs: setup
@@ -48,4 +52,6 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: workspace-${{ github.run_id }}
+          path: ${{ github.workspace }}/workspace.tar
+      - run: tar -xpf workspace.tar
       - run: npm run lint
