@@ -6,14 +6,10 @@ on:
       - 'main'
 
 jobs:
-  checkout:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-  setup:
-    needs: checkout
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/setup-node@v2
         with:
           node-version: 17
@@ -26,13 +22,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
       - run: npm ci
+      - uses: actions/upload-artifact@v2
+        with:
+          name: workspace-${{ github.run_id }}
+          path: ${{ github.workspace }}
+          retention-days: 1
   test:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 17
+      - uses: actions/download-artifact@v2
+        with:
+          name: workspace-${{ github.run_id }}
       - run: npm test -- --ci
   lint:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 17
+      - uses: actions/download-artifact@v2
+        with:
+          name: workspace-${{ github.run_id }}
       - run: npm run lint
