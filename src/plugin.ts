@@ -10,6 +10,7 @@ import type {
 import Ajv from "ajv";
 import standaloneCode from "ajv/dist/standalone";
 import { mergeDeepLeft } from "ramda";
+import { createBuildCache } from "./cache";
 
 export interface Options {
   extraKeywords?: CodeKeywordDefinition[];
@@ -47,6 +48,16 @@ export const AjvPlugin = ({
       ajv.addKeyword(keywordDef);
     }
 
+    const compileWithCache = createBuildCache(async (filePath, fileContent) => {
+      ajv.removeSchema();
+      const schema = JSON.parse(fileContent) as AnySchemaObject;
+      schema.$id = `http://example.com/${path.relative(
+        process.cwd(),
+        filePath
+      )}`;
+      return standaloneCode(ajv, await ajv.compileAsync(schema));
+    });
+
     build.onResolve(
       { filter: /\.json\?ajv$/i },
       async ({ path: rawPath, resolveDir }) => {
@@ -61,15 +72,11 @@ export const AjvPlugin = ({
     build.onLoad(
       { namespace: "ajv-validator", filter: /.*/ },
       async ({ path: filePath }) => {
-        const schema = JSON.parse(
-          await fs.readFile(filePath, "utf8")
-        ) as AnySchemaObject;
-        schema.$id = `http://example.com/${path.relative(
-          process.cwd(),
-          filePath
-        )}`;
         return {
-          contents: standaloneCode(ajv, await ajv.compileAsync(schema)),
+          contents: await compileWithCache(
+            filePath,
+            await fs.readFile(filePath, "utf8")
+          ),
           loader: "js" as const,
           resolveDir: path.dirname(filePath),
         };

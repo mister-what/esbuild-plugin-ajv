@@ -2,8 +2,10 @@ import path from "path";
 import { runInThisContext } from "vm";
 import * as esbuild from "esbuild";
 import getTransformKeywordDef from "ajv-keywords/dist/definitions/transform";
+import * as CodegenModule from "ajv/dist/standalone";
 import type { Options } from "./plugin";
 import { AjvPlugin } from "./plugin";
+import * as BuildCacheModule from "./cache";
 
 const wrapInCjs = (source: string) =>
   [
@@ -73,6 +75,34 @@ const evaluateCjs = <M>(code: string): M => {
   return moduleObj.exports;
 };
 
+const makeIncrementalBuild = () => {
+  const ajvPlugin = AjvPlugin({
+    ajvOptions: { coerceTypes: true },
+  });
+  return esbuild.build({
+    stdin: {
+      contents: `
+          import validator from "./testSchema.json?ajv";
+
+          export const validate = (data) => {
+            if (!validator(data)) return false;
+            return data;
+          };`,
+      loader: "js",
+      sourcefile: "test-entrypoint.js",
+      resolveDir: path.resolve(__dirname, "__fixtures__"),
+    },
+    outfile: path.resolve(__dirname, "build", "main.js"),
+    target: "node16",
+    bundle: true,
+    format: "esm",
+    minify: false,
+    write: false,
+    plugins: [ajvPlugin],
+    incremental: true,
+  });
+};
+
 describe("AjvPlugin", () => {
   it("builds a a validation with external keywords", async () => {
     const { validate } = evaluateCjs<{ validate: (x: unknown) => unknown }>(
@@ -123,5 +153,31 @@ describe("AjvPlugin", () => {
       trailingComma: "none",
       printWidth: 120,
     });
+  });
+
+  it("caches build results", async () => {
+    const compileSpy = jest.spyOn(CodegenModule, "default");
+    const createBuildCacheSpy = jest
+      .spyOn(BuildCacheModule, "createBuildCache")
+      .mockImplementation(
+        (cb) =>
+          (...args) =>
+            Promise.resolve(cb(...args))
+      );
+
+    const result = await makeIncrementalBuild();
+    expect(compileSpy).toHaveBeenCalledTimes(1);
+    await result.rebuild?.();
+    expect(compileSpy).toHaveBeenCalledTimes(2);
+    result.rebuild?.dispose();
+
+    createBuildCacheSpy.mockRestore();
+    compileSpy.mockClear();
+
+    const resultCached = await makeIncrementalBuild();
+    expect(compileSpy).toHaveBeenCalledTimes(1);
+    await resultCached.rebuild?.();
+    expect(compileSpy).toHaveBeenCalledTimes(1);
+    resultCached.rebuild?.dispose();
   });
 });
