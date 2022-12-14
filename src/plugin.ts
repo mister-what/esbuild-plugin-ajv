@@ -60,10 +60,13 @@ export const AjvPlugin = ({
 
     build.onResolve(
       { filter: /\.json\?ajv$/i },
-      async ({ path: rawPath, resolveDir }) => {
+      async ({ path: rawPath, kind, resolveDir }) => {
         return {
           path: (
-            await build.resolve(rawPath.replace(/\?ajv$/i, ""), { resolveDir })
+            await build.resolve(rawPath.replace(/\?ajv$/i, ""), {
+              kind,
+              resolveDir,
+            })
           ).path,
           namespace: "ajv-validator",
         };
