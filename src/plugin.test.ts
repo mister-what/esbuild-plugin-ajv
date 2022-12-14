@@ -9,9 +9,11 @@ import * as BuildCacheModule from "./cache";
 
 const wrapInCjs = (source: string) =>
   [
-    "(function({module, exports = module.exports, require, __dirname, __filename}) {",
+    // The second `function` wrapper is to prevent a strict mode error:
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Strict_Non_Simple_Params
+    "(function({module, exports = module.exports, require, __dirname, __filename}) {(function(){",
     source,
-    "});",
+    "})();});",
   ].join("\n");
 
 const runBuild = async (

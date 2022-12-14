@@ -58,7 +58,7 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
         if (valid0) {
           if (data.bar !== void 0) {
             const _errs3 = errors;
-            if (data.bar !== 123) {
+            if (123 !== data.bar) {
               validate11.errors = [
                 {
                   instancePath: instancePath + "/bar",
